@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  TodoSAMBackend
+
+  Sample SAM Template for TodoSAMBackend
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  TaskSAMFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: lambda_functions/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Role: arn:aws:iam::026802451096:role/service-role/TaskLambdaBackend-role-mdsi6rzc
+      Events:
+        Gettask:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /gettask
+            Method: get
+            RestApiId:
+              Ref: TaskSAMAPI
+  
+  TaskSAMAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: test
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  TaskSAMApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${TaskSAMAPI}.execute-api.${AWS::Region}.amazonaws.com/test/gettask/"
+  TaskSAMFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt TaskSAMFunction.Arn
